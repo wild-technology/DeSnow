@@ -1,0 +1,47 @@
+# DeSnow Configuration
+# Target hardware: RTX 5090 (32GB VRAM) + Threadripper + CUDA 13.2
+
+# Data settings
+data:
+  train_dir: "data/msrb/train"
+  val_dir: "data/msrb/test"
+  image_size: 384
+  batch_size: 16          # RTX 5090 32GB VRAM handles larger batches
+  num_workers: 8           # Threadripper has many cores for data loading
+
+# Model settings
+model:
+  architecture: "unet"  # "unet" or "lightweight_unet"
+  in_channels: 3
+  out_channels: 3
+  base_filters: 64
+  depth: 4
+  compile: true            # torch.compile() for Blackwell sm_120 optimization
+  amp: true                # Automatic mixed precision (bfloat16 on Blackwell Tensor Cores)
+
+# Training settings
+training:
+  epochs: 100
+  learning_rate: 1.0e-4
+  weight_decay: 1.0e-5
+  scheduler: "cosine"
+  l1_weight: 1.0
+  perceptual_weight: 0.1
+  save_every: 10
+  checkpoint_dir: "checkpoints"
+
+# Inference settings
+inference:
+  mode: "hybrid"  # "temporal", "unet", "hybrid"
+  temporal_window: 7
+  tile_size: 1024          # Larger tiles — RTX 5090 has 32GB VRAM
+  tile_overlap: 64
+  device: "cuda"
+
+# Traditional filter settings
+traditional:
+  temporal_window: 7
+  morph_kernel_size: 3
+  brightness_threshold: 0.85
+  min_particle_area: 2
+  max_particle_area: 200
